@@ -42,3 +42,10 @@ class MagnetometerDataModel:
             # insert samples
             self._db.multiple_insert('samples', \
             values=itertools.chain.from_iterable(datastore.sample_dict_gen()))
+
+    def get_data(self):
+        """Returns data"""
+
+        data = self._db.select('samples')
+
+        return data
