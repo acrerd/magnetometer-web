@@ -1,0 +1,21 @@
+$def with (data_last_received)
+$var css: site.css plot.css
+$var js: jquery.js jquery.flot.js site.plot.js
+<h1>Magnetometer</h1>
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">North/South</h3>
+      </div>
+      <div class="panel-body">
+        <div id="plot" class="plot-large"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-4">
+    <p>Last data received $data_last_received</p>
+  </div>
+</div>

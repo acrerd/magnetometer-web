@@ -196,3 +196,14 @@ specified key".format(sample['channel']))
 
         return [Sample(sample.channel, sample.value) for sample in samples \
         if sample.channel in allowed_channels]
+
+    def get_last_received_time(self):
+        """Gets the time of the last data received"""
+
+        # get timestamp
+        timestamp = self._db.select_single_cell('samples', what="timestamp", \
+        order="timestamp DESC")
+
+        # create time object
+
+        return timestamp

@@ -1,6 +1,7 @@
 import web
 
 import models
+import database
 from picolog.data import DataStore
 
 urls = (
@@ -8,11 +9,15 @@ urls = (
     "/?", "List"
 )
 
+# start web application
 app = web.application(urls, globals())
+
+# start templates
+render = web.template.render('templates/', base='base')
 
 class BaseController:
     def __init__(self):
-        self.db = web.database(dbn='sqlite', db='test.db')
+        self.db = database.Database(db='test.db')
 
 class List(BaseController):
     def GET(self):
@@ -20,7 +25,7 @@ class List(BaseController):
 
         data = data_model.get_samples("hello")
 
-        return data
+        return render.index(data_last_received=data_model.get_last_received_time())
 
 class Insert(BaseController):
     """Methods to insert data"""
