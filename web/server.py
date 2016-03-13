@@ -1,31 +1,55 @@
+import sys
+import os
 import web
 
+from config import get_config
 import models
 import database
 from picolog.data import DataStore
 
+# URL routing
 urls = (
     "/insert", "Insert",
     "/?", "List"
 )
 
-# start web application
+###
+# get config
+
+# path to config file, if specified
+config_path = None
+
+if len(sys.argv) > 1:
+    config_path = sys.argv[1]
+
+config = get_config(config_path)
+
+###
+# Start web application
+
+# create application object
 app = web.application(urls, globals())
 
-# start templates
-render = web.template.render('templates/', base='base')
+# create template renderer
+render = web.template.render("templates", base='base')
 
 class BaseController:
     def __init__(self):
-        self.db = database.Database(db='test.db')
+        self.db = database.Database(config)
 
 class List(BaseController):
     def GET(self):
-        data_model = models.MagnetometerDataModel(self.db)
+        data_model = models.MagnetometerDataModel(self.db, config)
 
-        data = data_model.get_samples("hello")
+        key = "UuF0ZUOyCIEJ4RmqMepvOv"
+        data = data_model.get_multi_channel_time_series(key, [1,2,3])
 
-        return render.index(data_last_received=data_model.get_last_received_time())
+        # convert entries to JavaScript format
+        data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
+        for entry in series]) for series in data]
+
+        return render.index(data_js=data_js, \
+        data_last_received=data_model.get_last_received_time(human_readable=True))
 
 class Insert(BaseController):
     """Methods to insert data"""
@@ -41,15 +65,16 @@ class Insert(BaseController):
         key = data['key']
 
         # data model
-        data_model = models.MagnetometerDataModel(self.db)
+        data_model = models.MagnetometerDataModel(self.db, config)
 
         # insert data
         try:
             insert_count = data_model.add_data(datastore, key)
 
             return "{0} samples added".format(insert_count)
-        except Exception:
-            return "No access with specified key"
+        except Exception, e:
+            #return "No access with specified key"
+            return e
 
 if __name__ == "__main__":
-    app.run()
+    web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))

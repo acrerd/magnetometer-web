@@ -13,6 +13,9 @@ $def with (content)
     $if content.css:
       $for f in content.css.split():
         <link rel="stylesheet" type="text/css" href="/static/css/$f">
+    $if content.js:
+      $for f in content.js.split():
+        <script src="/static/js/$f"></script>
   </head>
   <body>
      <div class="navbar navbar-inverse navbar-fixed-top">
@@ -36,8 +39,5 @@ $def with (content)
      <div class="container">
        $:content
     </div>
-    $if content.js:
-      $for f in content.js.split():
-        <script src="/static/js/$f"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
-$def with (data_last_received)
+$def with (data_js, data_last_received)
 $var css: site.css plot.css
-$var js: jquery.js jquery.flot.js site.plot.js
+$var js: jquery.js jquery.flot.js jquery.flot.time.js
 <h1>Magnetometer</h1>
 <div class="row">
   <div class="col-md-8 col-md-offset-2">
@@ -19,3 +19,12 @@ $var js: jquery.js jquery.flot.js site.plot.js
     <p>Last data received $data_last_received</p>
   </div>
 </div>
+<script type="text/javascript">
+  $$(function() {
+    var data = [$data_js[1]];
+
+		$$.plot("#plot", [data], {
+			xaxis: {mode: "time"}
+		});
+	});
+</script>

@@ -1,11 +1,27 @@
+import sys
 import web
 import models
 
-from database import MagnetometerDatabase
+from config import get_config
+from database import Database
 from picolog.data import DataStore, Reading, Sample
 
-db = MagnetometerDatabase.instance()
-key = "hello"
+###
+# get config
+
+# path to config file, if specified
+config_path = None
+
+if len(sys.argv) > 1:
+    config_path = sys.argv[1]
+
+config = get_config(config_path)
+
+###
+# populate database
+
+db = Database(config)
+key = "UuF0ZUOyCIEJ4RmqMepvOv"
 
 keys = models.AccessKeyModel(db)
 keys.init_schema()
@@ -29,7 +45,7 @@ channel_access.add_channel_access(4, key_id, models.ChannelAccessModel.MODE_RW)
 magnetometer = models.MagnetometerDataModel(db)
 magnetometer.init_schema()
 
-datastore = DataStore(100)
-datastore.insert([Reading(0, [1,2,3], [10, 20, 30]), Reading(1, [1,2,3], [11, 21, 31])])
-
-magnetometer.add_data(datastore, key)
+# example of adding data
+#datastore = DataStore(100)
+#datastore.insert([Reading(0, [1,2,3], [10, 20, 30]), Reading(1, [1,2,3], [11, 21, 31])])
+#magnetometer.add_data(datastore, key)

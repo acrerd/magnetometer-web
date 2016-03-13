@@ -1,8 +1,10 @@
+import web.db
 import datetime
 import itertools
 
 from picolog.data import Sample
 from picolog.constants import Channel
+import utils
 
 """Data models"""
 
@@ -12,7 +14,10 @@ class DatabaseModel:
     """The database connection"""
     _db = None
 
-    def __init__(self, db):
+    """The configuration file"""
+    config = None
+
+    def __init__(self, db, config):
         """Initialises the magnetometer data model
 
         :param db: database object
@@ -20,6 +25,9 @@ class DatabaseModel:
 
         # set database
         self._db = db
+
+        # set config
+        self.config = config
 
 class AccessKeyModel(DatabaseModel):
     """Represents the access keys model"""
@@ -155,6 +163,7 @@ class MagnetometerDataModel(DatabaseModel):
 	            value INTEGER NOT NULL,
                 FOREIGN KEY(channel) REFERENCES channels(channel),
                 CONSTRAINT sample_index UNIQUE (channel, timestamp)
+                ON CONFLICT IGNORE
             )
         ''')
 
@@ -165,7 +174,8 @@ class MagnetometerDataModel(DatabaseModel):
         """
 
         # get allowed channels
-        allowed_channels = ChannelAccessModel(self._db).get_writable_channels(key)
+        allowed_channels = ChannelAccessModel(self._db, \
+        self.config).get_writable_channels(key)
 
         insert_count = 0
 
@@ -184,26 +194,61 @@ specified key".format(sample['channel']))
 
         return insert_count
 
-    def get_samples(self, key):
-        """Returns samples"""
+    def get_channel_time_series(self, key, channel, *args, **kwargs):
+        """Returns time series for the specified channel"""
 
         # get allowed channels
-        allowed_channels = ChannelAccessModel(self._db).get_readable_channels(key)
+        allowed_channels = ChannelAccessModel(self._db, \
+        self.config).get_readable_channels(key)
 
-        samples = self._db.select('samples')
+        # check access
+        if channel not in allowed_channels:
+            # return empty list
+            return []
 
-        data = []
+        # get rows
+        rows = self._db.select('samples', {'channel': int(channel)}, \
+        where='channel = $channel', *args, **kwargs)
 
-        return [Sample(sample.channel, sample.value) for sample in samples \
-        if sample.channel in allowed_channels]
+        # create timeseries from rows
+        return [[row.timestamp, row.value] for row in rows \
+        if row.channel in allowed_channels]
 
-    def get_last_received_time(self):
-        """Gets the time of the last data received"""
+    def get_multi_channel_time_series(self, key, channels, *args, **kwargs):
+        """Returns time series for multiple channels as specified"""
+
+        # get allowed channels
+        allowed_channels = ChannelAccessModel(self._db, \
+        self.config).get_readable_channels(key)
+
+        # create where clause, only specifying allowed channels
+        sqlors = web.db.sqlors('channel = ', [i for i in channels \
+        if i in allowed_channels])
+
+        # get rows
+        rows = self._db.select('samples', where=sqlors, order="channel ASC", \
+        *args, **kwargs)
+
+        # create multiple time series from rows
+        # for some reason, list(v) doesn't work, so we need [i for i in v]
+        return [[[i.timestamp, i.value] for i in v] for k, v in itertools.groupby(rows, \
+        lambda x: x.channel)]
+
+    def get_last_received_time(self, human_readable=True):
+        """Gets the time of the last data received
+
+        :param human_readable: whether to make the time human readible or leave \
+        it as a UNIX timestamp
+        """
 
         # get timestamp
         timestamp = self._db.select_single_cell('samples', what="timestamp", \
         order="timestamp DESC")
 
         # create time object
+        if human_readable:
+            timestamp = utils.format_date_time(timestamp, \
+            self.config.get('general', 'date_format'), \
+            self.config.get('general', 'time_format'))
 
         return timestamp

@@ -1,6 +1,7 @@
+[general]
+debug = True
+date_format = %Y-%m-%d
+time_format = %H:%M:%S
+
 [database]
-host = localhost
-port = 3306
-database = magnetometer
-username = username
-password = password
+path = magnetometer.db
