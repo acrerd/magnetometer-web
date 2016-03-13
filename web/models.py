@@ -1,3 +1,5 @@
+from __future__ import division
+
 import web.db
 import datetime
 import itertools
@@ -214,19 +216,30 @@ specified key".format(sample['channel']))
         return [[row.timestamp, row.value] for row in rows \
         if row.channel in allowed_channels]
 
-    def get_multi_channel_time_series(self, key, channels, *args, **kwargs):
+    def get_multi_channel_time_series(self, key, channels, since=None, *args, \
+    **kwargs):
         """Returns time series for multiple channels as specified"""
 
         # get allowed channels
         allowed_channels = ChannelAccessModel(self._db, \
         self.config).get_readable_channels(key)
 
-        # create where clause, only specifying allowed channels
-        sqlors = web.db.sqlors('channel = ', [i for i in channels \
-        if i in allowed_channels])
+        # empty where clause
+        where = []
+
+        # specify allowed channels
+        where.append(web.db.sqlors('channel = ', [i for i in channels \
+        if i in allowed_channels]))
+
+        # create since command (and convert timestamp from s to ms)
+        if since is not None:
+            where.append("timestamp >= {0}".format(int(since.strftime("%s")) * 1000))
+
+        # create full where command
+        sqlwhere = " AND ".join([str(clause) for clause in where])
 
         # get rows
-        rows = self._db.select('samples', where=sqlors, order="channel ASC", \
+        rows = self._db.select('samples', where=sqlwhere, order="channel ASC", \
         *args, **kwargs)
 
         # create multiple time series from rows
@@ -234,21 +247,10 @@ specified key".format(sample['channel']))
         return [[[i.timestamp, i.value] for i in v] for k, v in itertools.groupby(rows, \
         lambda x: x.channel)]
 
-    def get_last_received_time(self, human_readable=True):
-        """Gets the time of the last data received
-
-        :param human_readable: whether to make the time human readible or leave \
-        it as a UNIX timestamp
-        """
+    def get_last_received_time(self):
+        """Gets the time of the last data received"""
 
         # get timestamp
-        timestamp = self._db.select_single_cell('samples', what="timestamp", \
-        order="timestamp DESC")
-
-        # create time object
-        if human_readable:
-            timestamp = utils.format_date_time(timestamp, \
-            self.config.get('general', 'date_format'), \
-            self.config.get('general', 'time_format'))
-
-        return timestamp
+        return datetime.datetime.utcfromtimestamp(int( \
+        self._db.select_single_cell('samples', what="timestamp", \
+        order="timestamp DESC")) / 1000)

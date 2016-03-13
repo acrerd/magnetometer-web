@@ -1,8 +1,10 @@
 import sys
 import os
 import web
+import datetime
 
 from config import get_config
+import utils
 import models
 import database
 from picolog.data import DataStore
@@ -41,15 +43,22 @@ class List(BaseController):
     def GET(self):
         data_model = models.MagnetometerDataModel(self.db, config)
 
+        # last received time
+        last_received_time = data_model.get_last_received_time()
+
+        # earliest time to retrieve data for
+        start_time = last_received_time - datetime.timedelta(hours = 1)
+
         key = "UuF0ZUOyCIEJ4RmqMepvOv"
-        data = data_model.get_multi_channel_time_series(key, [1,2,3])
+        data = data_model.get_multi_channel_time_series(key, [1,2,3], \
+        since=start_time)
 
         # convert entries to JavaScript format
         data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
         for entry in series]) for series in data]
 
         return render.index(data_js=data_js, \
-        data_last_received=data_model.get_last_received_time(human_readable=True))
+        data_since=utils.format_date_time(start_time, config))
 
 class Insert(BaseController):
     """Methods to insert data"""

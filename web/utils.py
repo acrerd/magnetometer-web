@@ -2,13 +2,12 @@ from __future__ import division
 
 import datetime
 
-def format_date_time(timestamp, date_format, time_format):
+def format_date_time(dateobj, config):
     """Formats the specified timestamp
 
-    :param timestamp: UNIX timestamp, in ms
-    :param date_format: date format
-    :param time_format: time format
+    :param dateobj: datetime object
+    :param config: config file
     """
 
-    return datetime.datetime.fromtimestamp(timestamp / 1000).strftime(\
-    "{0} {1}".format(date_format, time_format))
+    return dateobj.strftime("{0} {1}".format(\
+    config.get('general', 'date_format'), config.get('general', 'time_format')))

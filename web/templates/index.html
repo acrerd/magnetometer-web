@@ -1,29 +1,63 @@
-$def with (data_js, data_last_received)
+$def with (data_js, data_since)
 $var css: site.css plot.css
 $var js: jquery.js jquery.flot.js jquery.flot.time.js
 <h1>Magnetometer</h1>
 <div class="row">
-  <div class="col-md-8 col-md-offset-2">
+  <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">North/South</h3>
+        <h1 class="panel-title">Last hour (since $data_since)</h1>
       </div>
       <div class="panel-body">
-        <div id="plot" class="plot-large"></div>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">North/South</h3>
+              </div>
+              <div class="panel-body">
+                <div id="plot-1" class="plot-sm"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">East/West</h3>
+              </div>
+              <div class="panel-body">
+                <div id="plot-2" class="plot-sm"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Up/Down</h3>
+              </div>
+              <div class="panel-body">
+                <div id="plot-3" class="plot-sm"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<div class="row">
-  <div class="col-md-4 col-md-offset-4">
-    <p>Last data received $data_last_received</p>
-  </div>
-</div>
 <script type="text/javascript">
   $$(function() {
-    var data = [$data_js[1]];
+    var data1 = [$data_js[0]];
+    var data2 = [$data_js[1]];
+    var data3 = [$data_js[2]];
 
-		$$.plot("#plot", [data], {
+		$$.plot("#plot-1", [data1], {
+			xaxis: {mode: "time"}
+		});
+    $$.plot("#plot-2", [data2], {
+			xaxis: {mode: "time"}
+		});
+    $$.plot("#plot-3", [data3], {
 			xaxis: {mode: "time"}
 		});
 	});
