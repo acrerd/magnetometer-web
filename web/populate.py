@@ -23,11 +23,11 @@ config = get_config(config_path)
 db = Database(config)
 key = "UuF0ZUOyCIEJ4RmqMepvOv"
 
-keys = models.AccessKeyModel(db)
+keys = models.AccessKeyModel(db, config)
 keys.init_schema()
 key_id = keys.add_key(key)
 
-channels = models.MagnetometerChannelModel(db)
+channels = models.MagnetometerChannelModel(db, config)
 channels.init_schema()
 
 channels.add_channel(1, "Channel 1")
@@ -35,14 +35,14 @@ channels.add_channel(2, "Channel 2")
 channels.add_channel(3, "Channel 3")
 channels.add_channel(4, "Channel 4")
 
-channel_access = models.ChannelAccessModel(db)
+channel_access = models.ChannelAccessModel(db, config)
 channel_access.init_schema()
 channel_access.add_channel_access(1, key_id, models.ChannelAccessModel.MODE_RW)
 channel_access.add_channel_access(2, key_id, models.ChannelAccessModel.MODE_RW)
 channel_access.add_channel_access(3, key_id, models.ChannelAccessModel.MODE_RW)
 channel_access.add_channel_access(4, key_id, models.ChannelAccessModel.MODE_RW)
 
-magnetometer = models.MagnetometerDataModel(db)
+magnetometer = models.MagnetometerDataModel(db, config)
 magnetometer.init_schema()
 
 # example of adding data

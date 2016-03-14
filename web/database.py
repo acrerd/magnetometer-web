@@ -21,8 +21,13 @@ class Database(web.db.SqliteDB):
         else:
             kwargs['limit'] = 1
 
-        # return the first row of the query result
-        return self.select(*args, **kwargs)[0]
+        select = self.select(*args, **kwargs)
+
+        if len(select.list()) > 0:
+            # return the first row of the query result
+            return select(*args, **kwargs)[0]
+        else:
+            return None
 
     def select_single_cell(self, *args, **kwargs):
         """Selects and returns one value"""
@@ -37,5 +42,8 @@ class Database(web.db.SqliteDB):
         # get row
         row = self.select_single_row(*args, **kwargs)
 
-        # return column
-        return row[kwargs['what']]
+        if row is not None:
+            # return column
+            return row[kwargs['what']]
+        else:
+            return None

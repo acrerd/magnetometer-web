@@ -53,9 +53,12 @@ class List(BaseController):
         data = data_model.get_multi_channel_time_series(key, [1,2,3], \
         since=start_time)
 
-        # convert entries to JavaScript format
-        data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
-        for entry in series]) for series in data]
+        if len(data) > 0:
+            # convert entries to JavaScript format
+            data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
+            for entry in series]) for series in data]
+        else:
+            data_js = [[], [], []]
 
         return render.index(data_js=data_js, \
         data_since=utils.format_date_time(start_time, config))

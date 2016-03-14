@@ -250,7 +250,16 @@ specified key".format(sample['channel']))
     def get_last_received_time(self):
         """Gets the time of the last data received"""
 
-        # get timestamp
-        return datetime.datetime.utcfromtimestamp(int( \
-        self._db.select_single_cell('samples', what="timestamp", \
-        order="timestamp DESC")) / 1000)
+        # get timestamp, in ms
+        timestamp = self._db.select_single_cell('samples', what="timestamp", \
+        order="timestamp DESC")
+
+        # check if it is valid
+        if timestamp is not None:
+            # convert to s
+            timestamp = int(timestamp) / 1000
+        else:
+            timestamp = 0
+
+        # return date object
+        return datetime.datetime.utcfromtimestamp(timestamp)
