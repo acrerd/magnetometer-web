@@ -50,7 +50,7 @@ class List(BaseController):
         start_time = last_received_time - datetime.timedelta(hours = 1)
 
         key = "UuF0ZUOyCIEJ4RmqMepvOv"
-        data = data_model.get_multi_channel_time_series(key, [1,2,3], \
+        data = data_model.get_multi_channel_time_series(key, [16, 13, 14], \
         since=start_time)
 
         if len(data) > 0:
