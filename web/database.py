@@ -21,9 +21,9 @@ class Database(web.db.SqliteDB):
         else:
             kwargs['limit'] = 1
 
-        select = self.select(*args, **kwargs)
+        select = self.select(*args, **kwargs).list()
 
-        if len(select.list()) > 0:
+        if len(select) > 0:
             # return the first row of the query result
             return select(*args, **kwargs)[0]
         else:
