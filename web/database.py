@@ -25,7 +25,7 @@ class Database(web.db.SqliteDB):
 
         if len(select) > 0:
             # return the first row of the query result
-            return select(*args, **kwargs)[0]
+            return select[0]
         else:
             return None
 
