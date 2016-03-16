@@ -26,6 +26,13 @@ if len(sys.argv) > 1:
 
 config = get_config(config_path)
 
+db = database.Database(config)
+key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
+
+channel_1 = models.Channel(16, db, config)
+channel_2 = models.Channel(13, db, config)
+channel_3 = models.Channel(14, db, config)
+
 ###
 # Start web application
 
@@ -36,38 +43,43 @@ app = web.application(urls, globals())
 render = web.template.render("templates", base='base')
 
 class BaseController:
-    def __init__(self):
-        self.db = database.Database(config)
+    pass
 
 class List(BaseController):
     def GET(self):
-        data_model = models.MagnetometerDataModel(self.db, config)
-        channel_model = models.MagnetometerChannelModel(self.db, config)
+        # channel data
+        channel_data_1 = models.ChannelSamples(channel_1, key, db, config)
+        channel_data_2 = models.ChannelSamples(channel_2, key, db, config)
+        channel_data_3 = models.ChannelSamples(channel_3, key, db, config)
+
+        # trend data, 10s average, last 6 hours
+        channel_data_2_trend = models.ChannelSampleTrends(channel_2, key, \
+        10000, db, config)
 
         # last received time
-        last_received_time = data_model.get_last_received_time()
+        last_raw_time = channel_data_1.get_last_time()
+        last_trend_time = channel_data_2_trend.get_last_trend_time()
 
         # earliest time to retrieve data for
-        start_time = last_received_time - datetime.timedelta(hours = 1)
+        raw_start_time = last_raw_time - datetime.timedelta(hours = 1)
+        trend_start_time = last_trend_time - datetime.timedelta(hours = 6)
 
-        key = "UuF0ZUOyCIEJ4RmqMepvOv"
         data = []
-        data.append(channel_model.get_channel_time_series(key, 16, \
-        since=start_time))
-        data.append(channel_model.get_channel_time_series(key, 13, \
-        since=start_time))
-        data.append(channel_model.get_channel_time_series(key, 14, \
-        since=start_time))
+        data.append(channel_data_1.get_time_series(since=raw_start_time))
+        data.append(channel_data_2.get_time_series(since=raw_start_time))
+        data.append(channel_data_3.get_time_series(since=raw_start_time))
+        data.append(channel_data_2_trend.get_time_series(since=trend_start_time))
 
         if len(data) > 0:
             # convert entries to JavaScript format
             data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
             for entry in series]) for series in data]
         else:
-            data_js = [[], [], []]
+            data_js = [[], [], [], []]
 
         return render.index(data_js=data_js, \
-        data_since=utils.format_date_time(start_time, config))
+        raw_data_since=utils.format_date_time(raw_start_time, config), \
+        trend_data_since=utils.format_date_time(trend_start_time, config))
 
 class Insert(BaseController):
     """Methods to insert data"""
@@ -80,19 +92,18 @@ class Insert(BaseController):
         datastore = DataStore.instance_from_json(data['data'])
 
         # get key from GET data
-        key = data['key']
-
-        # data model
-        data_model = models.MagnetometerDataModel(self.db, config)
+        client_key = models.Key(data['key'], db, config)
 
         # insert data
         try:
-            insert_count = data_model.add_data(datastore, key)
+            insert_count = models.ChannelSamples.add_from_datastore(db, key, \
+            datastore)
 
             return "{0} samples added".format(insert_count)
         except Exception, e:
             #return "No access with specified key"
-            return e
+            raise
+            #return e
 
 if __name__ == "__main__":
     web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))

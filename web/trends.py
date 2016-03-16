@@ -17,8 +17,11 @@ if len(sys.argv) > 1:
 config = get_config(config_path)
 
 db = Database(config)
-key = "UuF0ZUOyCIEJ4RmqMepvOv"
+key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
 
-trends = models.MagnetometerDataTrendModel(13, 10000, db, config)
-#trends.init_schema()
-print trends.compute_trends()
+channel_2 = models.Channel(13, db, config)
+channel_2_trends = models.ChannelSampleTrends(channel_2, key, 10000, db, config)
+#channel_2_trends.init_schema()
+
+inserted_row_count = channel_2_trends.update_trends(max_rows=1000)
+print "{0} rows inserted".format(inserted_row_count)
