@@ -1,16 +1,16 @@
 $def with (data_js, data_since)
 $var css: site.css plot.css
-$var js: jquery.js jquery.flot.js jquery.flot.time.js
+$var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
 <h1>Magnetometer</h1>
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-sm-12">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h1 class="panel-title">Last hour <small>since $data_since</small></h1>
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-4">
+          <div class="col-md-12 col-lg-4">
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">North/South</h3>
@@ -20,7 +20,7 @@ $var js: jquery.js jquery.flot.js jquery.flot.time.js
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-12 col-lg-4">
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">East/West</h3>
@@ -30,7 +30,7 @@ $var js: jquery.js jquery.flot.js jquery.flot.time.js
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-12 col-lg-4">
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">Up/Down</h3>

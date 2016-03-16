@@ -42,6 +42,7 @@ class BaseController:
 class List(BaseController):
     def GET(self):
         data_model = models.MagnetometerDataModel(self.db, config)
+        channel_model = models.MagnetometerChannelModel(self.db, config)
 
         # last received time
         last_received_time = data_model.get_last_received_time()
@@ -50,8 +51,13 @@ class List(BaseController):
         start_time = last_received_time - datetime.timedelta(hours = 1)
 
         key = "UuF0ZUOyCIEJ4RmqMepvOv"
-        data = data_model.get_multi_channel_time_series(key, [16, 13, 14], \
-        since=start_time)
+        data = []
+        data.append(channel_model.get_channel_time_series(key, 16, \
+        since=start_time))
+        data.append(channel_model.get_channel_time_series(key, 13, \
+        since=start_time))
+        data.append(channel_model.get_channel_time_series(key, 14, \
+        since=start_time))
 
         if len(data) > 0:
             # convert entries to JavaScript format
