@@ -52,9 +52,9 @@ class DataManager(BaseController):
         else:
             return web.notfound()
 
-    def PUT(self, key):
+    def PUT(self, key, timestamp):
         # get data
-        data = web.input(_method="both")
+        data = web.data()
 
         # create reading from data
         reading = Reading.instance_from_json(data)
@@ -64,11 +64,15 @@ class DataManager(BaseController):
 
         # insert data
         try:
-            insert_count = models.ChannelSamples.add_from_reading(db, key, \
-            reading)
-
-            return "{0} samples added".format(insert_count)
+            insert_count = models.ChannelSamples.add_from_reading(db, \
+            client_key, reading)
         except Exception, e:
             #return "No access with specified key"
             raise
             #return e
+
+        # set return status to signify creation
+        web.ctx.status = '201 Created'
+
+        # return number of samples added
+        return "{0} samples added".format(insert_count)
