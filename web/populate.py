@@ -21,7 +21,7 @@ config = get_config(config_path)
 # populate database
 
 db = Database(config)
-key = "UuF0ZUOyCIEJ4RmqMepvOv"
+key = config.get('general', 'key')
 
 keys = models.AccessKeyModel(db, config)
 keys.init_schema()

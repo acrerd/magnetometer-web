@@ -3,30 +3,14 @@ import os
 import web
 import datetime
 
-from config import get_config
+from config import init_settings_from_argv
 import utils
 import models
 import database
 import api
 from picolog.data import DataStore
 
-###
-# get config
-
-# path to config file, if specified
-config_path = None
-
-if len(sys.argv) > 1:
-    config_path = sys.argv[1]
-
-config = get_config(config_path)
-
-db = database.Database(config)
-server_key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
-
-channel_1 = models.Channel(16, db, config)
-channel_2 = models.Channel(13, db, config)
-channel_3 = models.Channel(14, db, config)
+config, db, server_key, channels, streams = init_settings_from_argv()
 
 ###
 # Start web application
@@ -48,37 +32,27 @@ class BaseController:
 
 class List(BaseController):
     def GET(self):
-        # channel data
-        channel_data_1 = models.ChannelSamples(channel_1, server_key, db, config)
-        channel_data_2 = models.ChannelSamples(channel_2, server_key, db, config)
-        channel_data_3 = models.ChannelSamples(channel_3, server_key, db, config)
-
-        # trend data, 10s average, last 6 hours
-        channel_data_2_trend = models.ChannelSampleTrends(channel_2, server_key, \
-        10000, db, config)
-
         # last received time
-        last_raw_time = channel_data_1.get_last_time()
-        last_trend_time = channel_data_2_trend.get_last_trend_time()
+        last_time = streams[0].get_last_time()
 
         # earliest time to retrieve data for
-        raw_start_time = last_raw_time - datetime.timedelta(hours = 1)
-        trend_start_time = last_trend_time - datetime.timedelta(hours = 6)
+        raw_start_time = last_time - datetime.timedelta(hours = 1)
+        trend_start_time = last_time - datetime.timedelta(hours = 6)
 
-        data = []
-        data.append(channel_data_1.get_time_series(since=raw_start_time))
-        data.append(channel_data_2.get_time_series(since=raw_start_time))
-        data.append(channel_data_3.get_time_series(since=raw_start_time))
-        data.append(channel_data_2_trend.get_time_series(since=trend_start_time))
+        # raw data streams
+        raw_streams = [stream.get_time_series(since=raw_start_time) \
+        for stream in streams if stream.stream_type == "raw"]
 
-        if len(data) > 0:
-            # convert entries to JavaScript format
-            data_js = [",".join(["[{0}, {1}]".format(str(entry[0]), str(entry[1])) \
-            for entry in series]) for series in data]
-        else:
-            data_js = [[], [], [], []]
+        # trend data streams
+        trend_streams = [stream.get_time_series(since=trend_start_time) \
+        for stream in streams if stream.stream_type == "trend"]
 
-        return render.index(data_js=data_js, \
+        # convert data to JavaScript
+        raw_streams_js = [utils.stream_to_js(data) for data in raw_streams]
+        trend_streams_js = [utils.stream_to_js(data) for data in trend_streams]
+
+        return render.index(raw_streams_js=raw_streams_js, \
+        trend_streams_js=trend_streams_js, \
         raw_data_since=utils.format_date_time(raw_start_time, config), \
         trend_data_since=utils.format_date_time(trend_start_time, config))
 

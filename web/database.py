@@ -3,10 +3,10 @@ import web.db
 class Database(web.db.SqliteDB):
     """Magnetometer database class"""
 
-    def __init__(self, config):
+    def __init__(self, path):
         # call parent - the old style way because web.db doesn't use new style
         # classes
-        web.db.SqliteDB.__init__(self, db=config.get('database', 'path'))
+        web.db.SqliteDB.__init__(self, db=path)
 
         # turn on foreign key support
         self.query("PRAGMA foreign_keys=ON")

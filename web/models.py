@@ -221,16 +221,20 @@ class ChannelSamples(DatabaseModel):
     """Channel"""
     channel = None
 
+    """Stream type"""
+    stream_type = None
+
     """Key"""
     key = None
 
     """Table name"""
     TABLE_NAME = "samples"
 
-    def __init__(self, channel, key, *args, **kwargs):
+    def __init__(self, channel, stream_type, key, *args, **kwargs):
         super(ChannelSamples, self).__init__(*args, **kwargs)
 
         self.channel = channel
+        self.stream_type = stream_type
         self.key = key
 
     @classmethod
@@ -347,18 +351,23 @@ class ChannelSampleTrends(DatabaseModel):
     """Channel"""
     channel = None
 
+    """Stream type"""
+    stream_type = None
+
     """Key"""
     key = None
 
     """Time average [ms]"""
     timestamp_avg = None
 
-    def __init__(self, channel, key, timestamp_avg, *args, **kwargs):
+    def __init__(self, channel, stream_type, key, timestamp_avg, *args, **kwargs):
         # initialise parent
         super(ChannelSampleTrends, self).__init__(*args, **kwargs)
 
         # set channel
         self.channel = channel
+
+        self.stream_type = stream_type
 
         # set key
         self.key = key

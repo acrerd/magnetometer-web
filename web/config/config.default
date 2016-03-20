@@ -2,6 +2,7 @@
 debug = True
 date_format = %Y-%m-%d
 time_format = %H:%M:%S
+key = UuF0ZUOyCIEJ4RmqMepvOv
 
 [database]
 path = magnetometer.db

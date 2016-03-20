@@ -2,33 +2,21 @@ import sys
 import web
 import time
 
-from config import get_config
+from config import init_settings_from_argv
 import models
 import database
 from picolog.data import Reading
+
+config, db, server_key, channels, streams = init_settings_from_argv()
+
+channel_1 = models.Channel(16, db, config)
+channel_2 = models.Channel(13, db, config)
+channel_3 = models.Channel(14, db, config)
 
 # URL routing
 urls = (
     "/(.+)/data/(.+)", "DataManager"
 )
-
-###
-# get config
-
-# path to config file, if specified
-config_path = None
-
-if len(sys.argv) > 1:
-    config_path = sys.argv[1]
-
-config = get_config(config_path)
-
-db = database.Database(config)
-server_key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
-
-channel_1 = models.Channel(16, db, config)
-channel_2 = models.Channel(13, db, config)
-channel_3 = models.Channel(14, db, config)
 
 app_api = web.application(urls, globals())
 
@@ -45,7 +33,7 @@ class DataManager(BaseController):
             # FIXME: make a Reading class to access last full reading time
             # HACK: use a single channel's last time
             last_data_time = \
-            models.ChannelSamples(channel_1, server_key, db, config).get_last_time()
+            models.ChannelSamples(channel_1, "raw", server_key, db, config).get_last_time()
 
             # return UNIX timestamp, in ms
             return time.mktime(last_data_time.timetuple()) * 1000

@@ -1,4 +1,4 @@
-$def with (data_js, raw_data_since, trend_data_since)
+$def with (raw_streams_js, trend_streams_js, raw_data_since, trend_data_since)
 $var css: site.css plot.css
 $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
 <h1>Magnetometer</h1>
@@ -70,10 +70,10 @@ $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
 </div>
 <script type="text/javascript">
   $$(function() {
-    var data1 = [$data_js[0]];
-    var data2 = [$data_js[1]];
-    var data3 = [$data_js[2]];
-    var data4 = [$data_js[3]];
+    var data1 = $raw_streams_js[0];
+    var data2 = $raw_streams_js[1];
+    var data3 = $raw_streams_js[2];
+    var data4 = $trend_streams_js[0];
 
 		$$.plot("#plot-1", [data1], {
 			xaxis: {mode: "time"}

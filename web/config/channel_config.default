@@ -1,0 +1,19 @@
+[Channel 16]
+enabled = True
+channel = 16
+name = "Field North/South"
+
+[Channel 13]
+enabled = True
+channel = 13
+name = "Field East/West"
+
+[Channel 14]
+enabled = True
+channel = 14
+name = "Field Up/Down"
+
+[Channel 15]
+enabled = True
+channel = 15
+name = "Temperature"

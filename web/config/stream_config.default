@@ -1,0 +1,25 @@
+[Channel 16 Stream]
+enabled = True
+channel = 16
+type = raw
+
+[Channel 13 Stream]
+enabled = True
+channel = 13
+type = raw
+
+[Channel 14 Stream]
+enabled = True
+channel = 14
+type = raw
+
+[Channel 15 Stream]
+enabled = True
+channel = 15
+type = raw
+
+[Channel 13 Trend]
+enabled = True
+channel = 13
+type = trend
+integration_time = 10000
