@@ -10,12 +10,6 @@ import database
 import api
 from picolog.data import DataStore
 
-# URL routing
-urls = (
-    "/api", api.app_api,
-    "/?", "List"
-)
-
 ###
 # get config
 
@@ -36,6 +30,12 @@ channel_3 = models.Channel(14, db, config)
 
 ###
 # Start web application
+
+# URL routing
+urls = (
+    "/api", api.app_api,
+    "/?", "List"
+)
 
 # create application object
 app = web.application(urls, globals())
@@ -83,4 +83,4 @@ class List(BaseController):
         trend_data_since=utils.format_date_time(trend_start_time, config))
 
 if __name__ == "__main__":
-    web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))
+    web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50001))

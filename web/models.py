@@ -262,7 +262,7 @@ class ChannelSamples(DatabaseModel):
         insert_count = 0
 
         # insert readings
-        for reading in datastore.readings):
+        for reading in datastore.readings:
             # add samples, incrementing insert count
             insert_count += cls.add_from_reading(db, key, reading)
 
@@ -283,7 +283,7 @@ class ChannelSamples(DatabaseModel):
         # start a transaction
         with db.transaction():
             # insert samples, checking channel access
-            for sample in reading.sample_dict_gen()):
+            for sample in reading.sample_dict_gen():
                 if sample["channel"] not in allowed_channels:
                     raise Exception("Channel {0} cannot be writen to with \
 specified key".format(sample["channel"]))
