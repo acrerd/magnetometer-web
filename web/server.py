@@ -83,4 +83,4 @@ class List(BaseController):
         trend_data_since=utils.format_date_time(trend_start_time, config))
 
 if __name__ == "__main__":
-    web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50001))
+    web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))

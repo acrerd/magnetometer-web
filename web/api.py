@@ -40,7 +40,7 @@ class DataManager(BaseController):
 
     def GET(self, key, command):
         # handle "latest"
-        if command == "latest":
+        if command == "latest/timestamp":
             # get last time
             # FIXME: make a Reading class to access last full reading time
             # HACK: use a single channel's last time
@@ -49,6 +49,8 @@ class DataManager(BaseController):
 
             # return UNIX timestamp, in ms
             return time.mktime(last_data_time.timetuple()) * 1000
+        else:
+            return web.notfound()
 
     def PUT(self, key):
         # get data
