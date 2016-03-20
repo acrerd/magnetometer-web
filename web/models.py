@@ -2,7 +2,6 @@ from __future__ import division
 
 import web.db
 import datetime
-import itertools
 
 from picolog.data import Sample
 from picolog.constants import Channel
@@ -262,17 +261,36 @@ class ChannelSamples(DatabaseModel):
 
         insert_count = 0
 
+        # insert readings
+        for reading in datastore.readings):
+            # add samples, incrementing insert count
+            insert_count += cls.add_from_reading(db, key, reading)
+
+        return insert_count
+
+    @classmethod
+    def add_from_reading(cls, db, key, reading):
+        """Adds a reading to the database
+
+        :param reading: the reading to add
+        """
+
+        # get allowed channels
+        allowed_channels = key.get_writable_channels()
+
+        insert_count = 0
+
         # start a transaction
         with db.transaction():
             # insert samples, checking channel access
-            for sample in itertools.chain.from_iterable(datastore.sample_dict_gen()):
-                if sample['channel'] not in allowed_channels:
+            for sample in reading.sample_dict_gen()):
+                if sample["channel"] not in allowed_channels:
                     raise Exception("Channel {0} cannot be writen to with \
-specified key".format(sample['channel']))
+specified key".format(sample["channel"]))
 
                 db.insert(cls.TABLE_NAME, \
-                channel=sample['channel'], timestamp=sample['timestamp'], \
-                value=sample['value'])
+                channel=sample["channel"], timestamp=sample["timestamp"], \
+                value=sample["value"])
 
                 insert_count += 1
 

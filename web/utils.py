@@ -3,7 +3,7 @@ from __future__ import division
 import datetime
 
 def format_date_time(dateobj, config):
-    """Formats the specified timestamp
+    """Formats the specified date
 
     :param dateobj: datetime object
     :param config: config file

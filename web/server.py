@@ -7,11 +7,12 @@ from config import get_config
 import utils
 import models
 import database
+import api
 from picolog.data import DataStore
 
 # URL routing
 urls = (
-    "/insert", "Insert",
+    "/api", api.app_api,
     "/?", "List"
 )
 
@@ -27,7 +28,7 @@ if len(sys.argv) > 1:
 config = get_config(config_path)
 
 db = database.Database(config)
-key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
+server_key = models.Key("UuF0ZUOyCIEJ4RmqMepvOv", db, config)
 
 channel_1 = models.Channel(16, db, config)
 channel_2 = models.Channel(13, db, config)
@@ -48,12 +49,12 @@ class BaseController:
 class List(BaseController):
     def GET(self):
         # channel data
-        channel_data_1 = models.ChannelSamples(channel_1, key, db, config)
-        channel_data_2 = models.ChannelSamples(channel_2, key, db, config)
-        channel_data_3 = models.ChannelSamples(channel_3, key, db, config)
+        channel_data_1 = models.ChannelSamples(channel_1, server_key, db, config)
+        channel_data_2 = models.ChannelSamples(channel_2, server_key, db, config)
+        channel_data_3 = models.ChannelSamples(channel_3, server_key, db, config)
 
         # trend data, 10s average, last 6 hours
-        channel_data_2_trend = models.ChannelSampleTrends(channel_2, key, \
+        channel_data_2_trend = models.ChannelSampleTrends(channel_2, server_key, \
         10000, db, config)
 
         # last received time
@@ -80,30 +81,6 @@ class List(BaseController):
         return render.index(data_js=data_js, \
         raw_data_since=utils.format_date_time(raw_start_time, config), \
         trend_data_since=utils.format_date_time(trend_start_time, config))
-
-class Insert(BaseController):
-    """Methods to insert data"""
-
-    def POST(self):
-        # get POST data, but also get GET data
-        data = web.input(_method="both")
-
-        # create datastore from POST data
-        datastore = DataStore.instance_from_json(data['data'])
-
-        # get key from GET data
-        client_key = models.Key(data['key'], db, config)
-
-        # insert data
-        try:
-            insert_count = models.ChannelSamples.add_from_datastore(db, key, \
-            datastore)
-
-            return "{0} samples added".format(insert_count)
-        except Exception, e:
-            #return "No access with specified key"
-            raise
-            #return e
 
 if __name__ == "__main__":
     web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))
