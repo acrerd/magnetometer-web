@@ -62,13 +62,19 @@ class Channel(DatabaseModel):
     """Channel"""
     channel_num = None
 
-    def __init__(self, channel_num, *args, **kwargs):
+    """Name"""
+    name = None
+
+    def __init__(self, channel_num, name, *args, **kwargs):
         """Initialises a database channel model"""
 
         super(Channel, self).__init__(*args, **kwargs)
 
         # set channel
         self.channel_num = int(channel_num)
+
+        # set name
+        self.name = name
 
     @classmethod
     def init_schema(cls, db):
@@ -99,12 +105,6 @@ class Channel(DatabaseModel):
         with self.db.transaction():
             # insert channel
             self.db.insert('channels', channel=self.channel_num, name=name)
-
-    def get_name(self):
-        """Returns channel name"""
-
-        return str(self.db.select_single_row('channels', \
-        {"channel": self.channel_num}, what="name", where="channel = $channel"))
 
 class Key(DatabaseModel):
     """Represents a key"""
@@ -335,6 +335,9 @@ specified key".format(sample["channel"]))
         return [[row.timestamp, row.value] for row in rows \
         if row.channel in allowed_channels]
 
+    def get_time_series_js(self, *args, **kwargs):
+        return utils.stream_to_js(self.get_time_series(*args, **kwargs))
+
     def get_last_time(self):
         """Gets the time of the last data in the table"""
 
@@ -344,6 +347,11 @@ specified key".format(sample["channel"]))
 
         # return date object
         return self.timestamp_to_datetime(timestamp)
+
+    def get_description(self):
+        """Returns a description string"""
+
+        return "{0} ({1})".format(self.channel.name, self.stream_type)
 
 class ChannelSampleTrends(DatabaseModel):
     """Represents a data trend for a magnetometer data structure"""
@@ -360,7 +368,8 @@ class ChannelSampleTrends(DatabaseModel):
     """Time average [ms]"""
     timestamp_avg = None
 
-    def __init__(self, channel, stream_type, key, timestamp_avg, *args, **kwargs):
+    def __init__(self, channel, stream_type, key, timestamp_avg, *args, \
+    **kwargs):
         # initialise parent
         super(ChannelSampleTrends, self).__init__(*args, **kwargs)
 
@@ -542,6 +551,18 @@ enough to span the specified trend time.")
         # create timeseries from rows
         return [[row.timestamp, row.value] for row in rows \
         if row.channel in allowed_channels]
+
+    def get_time_series_js(self, *args, **kwargs):
+        return utils.stream_to_js(self.get_time_series(*args, **kwargs))
+
+    def get_description(self):
+        """Returns a description string"""
+
+        # trend description
+        trend_description = "{0}s {1}".format(self.timestamp_avg / 1000, \
+        self.stream_type)
+
+        return "{0} ({1})".format(self.channel.name, trend_description)
 
 class NoDataForTrendsException(Exception):
     pass

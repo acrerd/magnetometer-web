@@ -1,4 +1,4 @@
-$def with (raw_streams_js, trend_streams_js, raw_data_since, trend_data_since)
+$def with (raw_streams, trend_streams, raw_start_time, trend_start_time, raw_data_since, trend_data_since)
 $var css: site.css plot.css
 $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
 <h1>Magnetometer</h1>
@@ -10,36 +10,17 @@ $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-12 col-lg-4">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">North/South</h3>
-              </div>
-              <div class="panel-body">
-                <div id="plot-1" class="plot-sm"></div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-12 col-lg-4">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">East/West</h3>
-              </div>
-              <div class="panel-body">
-                <div id="plot-2" class="plot-sm"></div>
+          $for stream in raw_streams:
+            <div class="col-md-12 col-lg-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">${stream.get_description()}</h3>
+                </div>
+                <div class="panel-body">
+                  <div id="plot-${stream.stream_type}_${stream.channel.channel_num}" class="plot-sm"></div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="col-md-12 col-lg-4">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Up/Down</h3>
-              </div>
-              <div class="panel-body">
-                <div id="plot-3" class="plot-sm"></div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -53,39 +34,34 @@ $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
       </div>
       <div class="panel-body">
         <div class="row">
-          <div class="col-md-12 col-lg-4">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">East/West</h3>
-              </div>
-              <div class="panel-body">
-                <div id="plot-trend-2" class="plot-sm"></div>
+          $for stream in trend_streams:
+            <div class="col-md-12 col-lg-6">
+              <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h3 class="panel-title">${stream.get_description()}</h3>
+                </div>
+                <div class="panel-body">
+                  <div id="plot-${stream.stream_type}_${stream.channel.channel_num}" class="plot-sm"></div>
+                </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 <script type="text/javascript">
-  $$(function() {
-    var data1 = $raw_streams_js[0];
-    var data2 = $raw_streams_js[1];
-    var data3 = $raw_streams_js[2];
-    var data4 = $trend_streams_js[0];
+    $for stream in raw_streams:
+      var data_${stream.stream_type}_${stream.channel.channel_num} = $stream.get_time_series_js(since=raw_start_time)
 
-		$$.plot("#plot-1", [data1], {
-			xaxis: {mode: "time"}
-		});
-    $$.plot("#plot-2", [data2], {
-			xaxis: {mode: "time"}
-		});
-    $$.plot("#plot-3", [data3], {
-			xaxis: {mode: "time"}
-		});
-    $$.plot("#plot-trend-2", [data4], {
-			xaxis: {mode: "time"}
-		});
-	});
+      $$.plot("#plot-${stream.stream_type}_${stream.channel.channel_num}", [data_${stream.stream_type}_${stream.channel.channel_num}], {
+        xaxis: {mode: "time"}
+      });
+
+    $for stream in trend_streams:
+      var data_${stream.stream_type}_${stream.channel.channel_num} = $stream.get_time_series_js(since=trend_start_time)
+
+      $$.plot("#plot-${stream.stream_type}_${stream.channel.channel_num}", [data_${stream.stream_type}_${stream.channel.channel_num}], {
+        xaxis: {mode: "time"}
+      });
 </script>

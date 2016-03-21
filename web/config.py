@@ -73,7 +73,8 @@ def parse_channels(channel_config, *args, **kwargs):
 
     # parse and return channels
     return [Channel(int(channel_config.get(section, "channel")), \
-    *args, **kwargs) for section in channel_config.sections()]
+    channel_config.get(section, "name"), *args, **kwargs) \
+    for section in channel_config.sections()]
 
 def parse_streams(stream_config, *args, **kwargs):
     return [parse_stream(stream_config, section, *args, **kwargs) \

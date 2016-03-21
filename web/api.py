@@ -9,10 +9,6 @@ from picolog.data import Reading
 
 config, db, server_key, channels, streams = init_settings_from_argv()
 
-channel_1 = models.Channel(16, db, config)
-channel_2 = models.Channel(13, db, config)
-channel_3 = models.Channel(14, db, config)
-
 # URL routing
 urls = (
     "/(.+)/data/(.+)", "DataManager"
@@ -32,8 +28,7 @@ class DataManager(BaseController):
             # get last time
             # FIXME: make a Reading class to access last full reading time
             # HACK: use a single channel's last time
-            last_data_time = \
-            models.ChannelSamples(channel_1, "raw", server_key, db, config).get_last_time()
+            last_data_time = last_time = streams[0].get_last_time()
 
             # set status
             web.ctx.status = '200 OK'
@@ -58,9 +53,8 @@ class DataManager(BaseController):
             insert_count = models.ChannelSamples.add_from_reading(db, \
             client_key, reading)
         except Exception, e:
-            #return "No access with specified key"
-            raise
-            #return e
+            print e
+            return e
 
         # set return status to signify creation
         web.ctx.status = '201 Created'
