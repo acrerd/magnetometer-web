@@ -2,24 +2,36 @@
 enabled = True
 channel = 16
 type = raw
+window = 1800000
 
 [Channel 13 Stream]
 enabled = True
 channel = 13
 type = raw
+window = 1800000
 
 [Channel 14 Stream]
 enabled = True
 channel = 14
 type = raw
+window = 1800000
 
 [Channel 15 Stream]
 enabled = True
 channel = 15
 type = raw
+window = 1800000
 
 [Channel 13 Trend]
 enabled = True
 channel = 13
 type = trend
-integration_time = 10000
+integration_time = 60000
+window = 86400000
+
+[Channel 15 Trend]
+enabled = True
+channel = 15
+type = trend
+integration_time = 900000
+window = 604800000

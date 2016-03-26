@@ -32,24 +32,16 @@ class BaseController:
 
 class List(BaseController):
     def GET(self):
-        # last received time
-        last_time = streams[0].get_last_time()
-
-        # earliest time to retrieve data for
-        raw_start_time = last_time - datetime.timedelta(hours = 1)
-        trend_start_time = last_time - datetime.timedelta(hours = 6)
-
         # raw data streams
         raw_streams = [stream for stream in streams if stream.stream_type == "raw"]
 
         # trend data streams
         trend_streams = [stream for stream in streams if stream.stream_type == "trend"]
 
-        return render.index(raw_streams=raw_streams, \
-        trend_streams=trend_streams, raw_start_time=raw_start_time, \
-        trend_start_time=trend_start_time, \
-        raw_data_since=utils.format_date_time(raw_start_time, config), \
-        trend_data_since=utils.format_date_time(trend_start_time, config))
+        stream_sets = [{"description": "Measurements", "streams": raw_streams}, \
+        {"description": "Trends", "streams": trend_streams}]
+
+        return render.index(stream_sets=stream_sets)
 
 if __name__ == "__main__":
     web.httpserver.runsimple(app.wsgifunc(), ("0.0.0.0", 50000))

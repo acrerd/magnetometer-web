@@ -1,67 +1,38 @@
-$def with (raw_streams, trend_streams, raw_start_time, trend_start_time, raw_data_since, trend_data_since)
+$def with (stream_sets)
 $var css: site.css plot.css
 $var js: jquery.js jquery.flot.js jquery.flot.resize.js jquery.flot.time.js
 <h1>Magnetometer</h1>
-<div class="row">
-  <div class="col-sm-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h1 class="panel-title">Measurements from last hour <small>since $raw_data_since</small></h1>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          $for stream in raw_streams:
-            <div class="col-md-12 col-lg-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">${stream.get_description()}</h3>
-                </div>
-                <div class="panel-body">
-                  <div id="plot-${stream.stream_type}_${stream.channel.channel_num}" class="plot-sm"></div>
+$for stream_set in stream_sets:
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1 class="panel-title">${stream_set["description"]}</h1>
+        </div>
+        <div class="panel-body">
+          <div class="row">
+            $for stream in stream_set["streams"]:
+              <div class="col-md-12 col-lg-6">
+                <div class="panel panel-default">
+                  <div class="panel-heading">
+                    <h3 class="panel-title">${stream.get_description()}</h3>
+                  </div>
+                  <div class="panel-body">
+                    <div id="plot-${stream.stream_type}_${stream.channel.channel_num}" class="plot-sm"></div>
+                  </div>
                 </div>
               </div>
-            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-<div class="row">
-  <div class="col-sm-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h1 class="panel-title">Trends from last six hours <small>since $trend_data_since</small></h1>
-      </div>
-      <div class="panel-body">
-        <div class="row">
-          $for stream in trend_streams:
-            <div class="col-md-12 col-lg-6">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">${stream.get_description()}</h3>
-                </div>
-                <div class="panel-body">
-                  <div id="plot-${stream.stream_type}_${stream.channel.channel_num}" class="plot-sm"></div>
-                </div>
-              </div>
-            </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 <script type="text/javascript">
-    $for stream in raw_streams:
-      var data_${stream.stream_type}_${stream.channel.channel_num} = $stream.get_time_series_js(since=raw_start_time)
+$for stream_set in stream_sets:
+  $for stream in stream_set["streams"]:
+    var data_${stream.stream_type}_${stream.channel.channel_num} = $stream.get_time_series_js()
 
-      $$.plot("#plot-${stream.stream_type}_${stream.channel.channel_num}", [data_${stream.stream_type}_${stream.channel.channel_num}], {
-        xaxis: {mode: "time"}
-      });
-
-    $for stream in trend_streams:
-      var data_${stream.stream_type}_${stream.channel.channel_num} = $stream.get_time_series_js(since=trend_start_time)
-
-      $$.plot("#plot-${stream.stream_type}_${stream.channel.channel_num}", [data_${stream.stream_type}_${stream.channel.channel_num}], {
-        xaxis: {mode: "time"}
-      });
+    $$.plot("#plot-${stream.stream_type}_${stream.channel.channel_num}", [data_${stream.stream_type}_${stream.channel.channel_num}], {
+      xaxis: {mode: "time"}
+    });
 </script>

@@ -224,17 +224,21 @@ class ChannelSamples(DatabaseModel):
     """Stream type"""
     stream_type = None
 
+    """Window"""
+    window = None
+
     """Key"""
     key = None
 
     """Table name"""
     TABLE_NAME = "samples"
 
-    def __init__(self, channel, stream_type, key, *args, **kwargs):
+    def __init__(self, channel, stream_type, window, key, *args, **kwargs):
         super(ChannelSamples, self).__init__(*args, **kwargs)
 
         self.channel = channel
         self.stream_type = stream_type
+        self.window = window
         self.key = key
 
     @classmethod
@@ -317,12 +321,17 @@ specified key".format(sample["channel"]))
         # add channel
         where.append("channel = {0}".format(self.channel.channel_num))
 
-        # create since command (and convert timestamp from s to ms)
-        if since is not None:
-            # threshold timestamp, in ms
-            since_timestamp = self.datetime_to_timestamp(since)
+        # threshold timestamp, in ms
+        if since is None:
+            # get default window
+            since = datetime.datetime.today() \
+            - datetime.timedelta(milliseconds=int(self.window))
 
-            where.append("timestamp >= {0}".format(since_timestamp))
+        # SQL since timestamp
+        since_timestamp = self.datetime_to_timestamp(since)
+
+        # create since command
+        where.append("timestamp >= {0}".format(since_timestamp))
 
         # create full where command
         sqlwhere = " AND ".join([str(clause) for clause in where])
@@ -362,13 +371,16 @@ class ChannelSampleTrends(DatabaseModel):
     """Stream type"""
     stream_type = None
 
+    """Window"""
+    window = None
+
     """Key"""
     key = None
 
     """Time average [ms]"""
     timestamp_avg = None
 
-    def __init__(self, channel, stream_type, key, timestamp_avg, *args, \
+    def __init__(self, channel, stream_type, window, key, timestamp_avg, *args, \
     **kwargs):
         # initialise parent
         super(ChannelSampleTrends, self).__init__(*args, **kwargs)
@@ -377,6 +389,8 @@ class ChannelSampleTrends(DatabaseModel):
         self.channel = channel
 
         self.stream_type = stream_type
+
+        self.window = window
 
         # set key
         self.key = key
@@ -398,6 +412,15 @@ class ChannelSampleTrends(DatabaseModel):
                 ON CONFLICT IGNORE
             )
         """.format(self._table_name()))
+
+    def delete(self):
+        """Deletes this trend"""
+
+        # delete
+        with self.db.transaction():
+            self.db.query("""
+                DROP TABLE {0}
+            """.format(self._table_name()))
 
     def _table_name(self):
         """Returns the table name"""
@@ -428,8 +451,9 @@ class ChannelSampleTrends(DatabaseModel):
         # calculate trends
         try:
             trend_times, trend_values = self._calculate_trends(max_rows)
-        except NoDataForTrendsException:
+        except NoDataForTrendsException as e:
             # no data available, so return 0 as the number of new trend points
+            print e
             return 0
 
         # insert into database, returning the number of new trend points
@@ -460,8 +484,9 @@ class ChannelSampleTrends(DatabaseModel):
 
         # check that spanned time is at least enough to make an average
         if rows[-1].timestamp - rows[0].timestamp < self.timestamp_avg:
-            raise NoDataForTrendsException("The maximum number of rows is not \
-enough to span the specified trend time.")
+            raise NoDataForTrendsException("The number of selected rows is not \
+large enough to span the specified trend time. If this happens frequently, \
+consider increasing max_rows parameter.")
 
         # timestamp of previous row (by default, first row)
         last_timestamp = rows[0].timestamp
