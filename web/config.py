@@ -87,6 +87,9 @@ def parse_stream(stream_config, section, channels, key, db, config):
     # get channel
     stream_channel = None
 
+    # window
+    window = stream_config.get(section, "window")
+
     for channel in channels:
         if int(stream_config.get(section, "channel")) is channel.channel_num:
             stream_channel = channel
@@ -97,11 +100,11 @@ def parse_stream(stream_config, section, channels, key, db, config):
         raise Exception("Specified stream channel is not configured")
 
     if stream_type == "raw":
-        return ChannelSamples(channel, stream_type=stream_type, \
+        return ChannelSamples(channel, stream_type=stream_type, window=window, \
         key=key, db=db, config=config)
     elif stream_type == "trend":
         return ChannelSampleTrends(stream_channel, stream_type=stream_type, \
-        key=key, timestamp_avg=int(stream_config.get(section, \
+        window=window, key=key, timestamp_avg=int(stream_config.get(section, \
         "integration_time")), db=db, config=config)
     else:
         raise TypeError("Unrecognised stream type")

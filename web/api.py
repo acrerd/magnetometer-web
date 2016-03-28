@@ -34,7 +34,7 @@ class DataManager(BaseController):
             web.ctx.status = '200 OK'
 
             # return UNIX timestamp, in ms
-            return str(time.mktime(last_data_time.timetuple()) * 1000)
+            return str(time.mktime(last_data_time.utctimetuple()) * 1000)
         else:
             return web.notfound()
 

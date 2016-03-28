@@ -37,7 +37,8 @@ class DatabaseModel(object):
         Assumes ms units, which should be used everywhere in the data models.
         """
 
-        return int(dateobj.strftime("%s")) * 1000
+        # subtract Unix epoch and convert to seconds, then multiply by 1000
+        return 1000 * (dateobj - datetime.datetime(1970, 1, 1)).total_seconds()
 
     @staticmethod
     def timestamp_to_datetime(timestamp):
